@@ -54,6 +54,37 @@ export class Dial extends React.Component {
       radius: this.props.initialRadius,
       angleX: this.props.initialAngle
     };
+
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: e => {
+        this.measureOffset();
+        const { deg, radius } = this.calcAngle(e.nativeEvent);
+        this.setState({ startingAngle: deg, startingRadius: radius });
+        return true;
+      },
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderGrant: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        this.updateAngle(gestureState);
+      },
+      onPanResponderRelease: () => {
+        const {
+          angle,
+          radius,
+          releaseAngle,
+          releaseRadius,
+        } = this.state;
+
+        if (angle !== releaseAngle || radius !== releaseRadius) {
+          this.setState({
+            releaseAngle: angle,
+            releaseRadius: radius,
+          });
+        }
+      },
+    });
   
     this.offset = { x: 0, y: 0 };
     this.updateState = throttle(this.updateState.bind(this), 16);
@@ -142,39 +173,6 @@ export class Dial extends React.Component {
   };
 
   // Lifecycle methods
-  componentWillMount() {
-    this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onStartShouldSetPanResponderCapture: e => {
-        this.measureOffset(); // measure again
-        const { deg, radius } = this.calcAngle(e.nativeEvent);
-        this.setState({ startingAngle: deg, startingRadius: radius });
-        return true;
-      },
-      onMoveShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponderCapture: () => true,
-      onPanResponderGrant: () => true,
-      onPanResponderMove: (_, gestureState) => {
-        this.updateAngle(gestureState);
-      },
-      onPanResponderRelease: () => {
-        const {
-          angle,
-          radius,
-          releaseAngle,
-          releaseRadius,
-        } = this.state;
-
-        if (angle !== releaseAngle || radius !== releaseRadius) {
-          this.setState({
-            releaseAngle: angle,
-            releaseRadius: radius,
-          });
-        }
-      },
-    });
-  }
-
   render() {
     const rotate = this.props.fixed ? "0deg" : `${this.state.angle}deg`;
     const scale = this.props.elastic ? this.state.radius : 1;
