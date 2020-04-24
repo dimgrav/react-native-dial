@@ -125,7 +125,7 @@ export class Dial extends React.Component {
     */
     const { width: screenWidth } = Dimensions.get("window");
 
-    this.self.measureInWindow((x, y, width, height) => {
+    this.self && this.self.measureInWindow((x, y, width, height) => {
       this.offset = {
         x: x % screenWidth + width / 2,
         y: y + height / 2,
