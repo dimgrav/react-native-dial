@@ -1,12 +1,12 @@
 {
   "name": "react-native-dial",
-  "version": "1.0.13",
-  "description": "A react native reusable and efficient dial knob element",
+  "version": "1.0.2",
+  "description": "Knob-style dial component for React Native",
   "main": "./Dial.js",
   "license": "MIT",
   "repository": {
     "type": "https",
-    "url": "https://github.com/netbeast/react-native-dial"
+    "url": "https://github.com/dimgrav/react-native-dial"
   },
   "keywords": [
     "dial",

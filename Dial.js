@@ -1,8 +1,6 @@
-// Base imports
 import React from "react";
 import PropTypes from "prop-types";
 
-// UI Components
 import {
   Dimensions,
   PanResponder,
@@ -11,11 +9,7 @@ import {
   ViewPropTypes
 } from "react-native";
 
-// Other
 import { throttle } from "lodash";
-
-
-const GREY_LIGHT = "#EEEEEE";
 
 
 export class Dial extends React.Component {
@@ -51,16 +45,22 @@ export class Dial extends React.Component {
       releaseAngle: this.props.initialAngle,
       releaseRadius: this.props.initialRadius,
       angle: this.props.initialAngle,
-      radius: this.props.initialRadius,
-      angleX: this.props.initialAngle
+      angleX: this.props.initialAngle,
+      radius: this.props.initialRadius
     };
 
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onStartShouldSetPanResponderCapture: e => {
         this.measureOffset();
+
         const { deg, radius } = this.calcAngle(e.nativeEvent);
-        this.setState({ startingAngle: deg, startingRadius: radius });
+
+        this.setState({
+          startingAngle: deg,
+          startingRadius: radius
+        });
+
         return true;
       },
       onMoveShouldSetPanResponder: () => true,
@@ -92,31 +92,31 @@ export class Dial extends React.Component {
 
   updateState({ deg, degX, radius = this.state.radius }) {
     radius = this.state.releaseRadius + radius - this.state.startingRadius;
-    if (radius < this.props.radiusMin) radius = this.props.radiusMin;
-    else if (radius > this.props.radiusMax) radius = this.props.radiusMax;
+    
+    if (radius < this.props.radiusMin) {
+      radius = this.props.radiusMin;
+    } else if (radius > this.props.radiusMax) {
+      radius = this.props.radiusMax;
+    }
 
     const angle = deg + this.state.releaseAngle - this.state.startingAngle;
-    if (deg < 0) deg += 360;
+    
+    if (deg < 0) {
+      deg += 360;
+    }
 
     if (angle !== this.state.angle || radius !== this.state.radius) {
       this.setState({ angle, radius });
       this.props.onValueChange && this.props.onValueChange(angle, radius);
     }
- 
-    this.setState({ angleX: degX });
-    this.props.onAngleXChange && this.props.onAngleXChange(degX);
+
+    if (this.state.angleX !== degX) {
+      this.setState({ angleX: degX });
+      this.props.onAngleXChange && this.props.onAngleXChange(degX);
+    }
   }
 
-  onLayout = () => {
-    /*
-    * Multiple measures to avoid the gap between animated
-    * and not animated views
-    */
-    this.measureOffset();
-    setTimeout(() => this.measureOffset(), 200);
-  };
-
-  measureOffset = () => {
+  measureOffset = (/* nativeEvent */) => {
     /*
     * const {x, y, width, height} = nativeEvent.layout
     * onlayout values are different than measureInWindow
@@ -136,7 +136,7 @@ export class Dial extends React.Component {
 
   updateAngle = gestureState => {
     let { deg, radius } = this.calcAngle(gestureState);
-    const degX = deg;
+    const degX = deg; // angle starts on the 4th quadrant
     if (deg < 0) deg += 360;
     if (Math.abs(this.state.angle - deg) > this.props.precision) {
       this.updateState({ deg, degX, radius });
@@ -153,13 +153,6 @@ export class Dial extends React.Component {
     };
   };
 
-  forceUpdate = (deg, radius) => {
-    this.setState({
-      angle: deg === undefined ? this.state.angle : deg,
-      radius: radius === undefined ? this.state.radius : radius,
-    });
-  };
-
   resetState = () => {
     this.setState({
       startingAngle: this.props.initialAngle,
@@ -167,8 +160,8 @@ export class Dial extends React.Component {
       releaseAngle: this.props.initialAngle,
       releaseRadius: this.props.initialRadius,
       angle: this.props.initialAngle,
-      radius: this.props.initialRadius,
-      angleX: this.props.initialAngle
+      angleX: this.props.initialAngle,
+      radius: this.props.initialRadius
     });
   };
 
@@ -186,8 +179,8 @@ export class Dial extends React.Component {
 
     return (
       <View
-        onLayout={(nativeEvent) => this.onLayout(nativeEvent)}
-        ref={(node) => { this.self = node; }}
+        onLayout={this.measureOffset}
+        ref={node => this.self = node}
         style={[styles.coverResponder, this.props.responderStyle]}
         {...pevProp}
         {...this._panResponder.panHandlers}
@@ -226,7 +219,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 60,
     elevation: 5,
-    shadowColor: GREY_LIGHT,
+    shadowColor: "#EEEEEE",
     shadowOffset: { width: 1, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 1,
