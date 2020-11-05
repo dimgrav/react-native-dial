@@ -38,7 +38,7 @@ export class Dial extends React.Component {
 
   constructor(props) {
     super(props);
-  
+
     this.state = {
       startingAngle: this.props.initialAngle,
       startingRadius: this.props.initialRadius,
@@ -69,15 +69,12 @@ export class Dial extends React.Component {
       onPanResponderMove: (_, gestureState) => {
         this.updateAngle(gestureState);
       },
-      onPanResponderRelease: () => {
-        const {
-          angle,
-          radius,
-          releaseAngle,
-          releaseRadius,
-        } = this.state;
+      onPanResponderRelease: (_, gestureState) => {
+        const { angle, radius, releaseAngle, releaseRadius } = this.state;
 
         if (angle !== releaseAngle || radius !== releaseRadius) {
+          // take the most up-to-date measurement on touch event ended
+          this.updateAngle(gestureState);
           this.setState({
             releaseAngle: angle,
             releaseRadius: radius,
@@ -85,14 +82,14 @@ export class Dial extends React.Component {
         }
       },
     });
-  
+
     this.offset = { x: 0, y: 0 };
     this.updateState = throttle(this.updateState.bind(this), 16);
   }
 
   updateState({ deg, degX, radius = this.state.radius }) {
     radius = this.state.releaseRadius + radius - this.state.startingRadius;
-    
+
     if (radius < this.props.radiusMin) {
       radius = this.props.radiusMin;
     } else if (radius > this.props.radiusMax) {
@@ -100,19 +97,26 @@ export class Dial extends React.Component {
     }
 
     const angle = deg + this.state.releaseAngle - this.state.startingAngle;
-    
+
     if (deg < 0) {
       deg += 360;
     }
 
+    let update = {};
+  
     if (angle !== this.state.angle || radius !== this.state.radius) {
-      this.setState({ angle, radius });
-      this.props.onValueChange && this.props.onValueChange(angle, radius);
+      update.angle = angle;
+      update.radius = radius;
+      if (this.state.angleX !== degX) {
+        update.angleX = degX;
+      }
     }
 
-    if (this.state.angleX !== degX) {
-      this.setState({ angleX: degX });
-      this.props.onAngleXChange && this.props.onAngleXChange(degX);
+    if (Object.keys(update).length > 0) {
+      this.setState(update, () => {
+        this.props.onValueChange && this.props.onValueChange(angle, radius);
+        update.angleX && this.props.onAngleXChange && this.props.onAngleXChange(degX);
+      });
     }
   }
 
@@ -136,8 +140,12 @@ export class Dial extends React.Component {
 
   updateAngle = gestureState => {
     let { deg, radius } = this.calcAngle(gestureState);
-    const degX = deg; // angle starts on the 4th quadrant
-    if (deg < 0) deg += 360;
+    const degX = deg; // angle measured from (-1, 0) in the 4th quadrant of the unit circle
+
+    if (deg < 0) {
+      deg += 360;
+    }
+
     if (Math.abs(this.state.angle - deg) > this.props.precision) {
       this.updateState({ deg, degX, radius });
     }
@@ -149,7 +157,7 @@ export class Dial extends React.Component {
     const [dx, dy] = [x - this.offset.x, y - this.offset.y];
     return {
       deg: Math.atan2(dy, dx) * 180 / Math.PI + 120,
-      radius: Math.sqrt(dy * dy + dx * dx) / this.radius, // pitagoras r^2 = x^2 + y^2 normalizado
+      radius: Math.sqrt(dy * dy + dx * dx) / this.radius // pitagoras r^2 = x^2 + y^2 normalizado
     };
   };
 
@@ -216,7 +224,7 @@ const styles = StyleSheet.create({
   dial: {
     width: 120,
     height: 120,
-    backgroundColor: "white",
+    backgroundColor: "#FFFFFF",
     borderRadius: 60,
     elevation: 5,
     shadowColor: "#EEEEEE",
@@ -230,7 +238,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "white",
+    backgroundColor: "#FFFFFF",
     elevation: 3,
   },
   pointer: {
@@ -239,7 +247,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 10,
     height: 10,
-    backgroundColor: "rgb(221,223,226)",
+    backgroundColor: "#DDDFE2",
     borderRadius: 5,
   },
 });
