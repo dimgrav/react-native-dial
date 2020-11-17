@@ -1,1 +1,1 @@
-export { SnapDial } from './src/SnapDial';
+export { SnapDial } from './src';

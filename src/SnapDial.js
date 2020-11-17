@@ -116,7 +116,7 @@ export default class extends React.Component {
     }
   };
 
-  _measureOffset = (/* nativeEvent */) => {
+  _measureOffset = () => {
     // x-y offsets must be relative to the window
     // calling onLayout returns x-y relative to the parent
     // thanks to Jesús Darío (jsdario) for mentioning this!
@@ -141,8 +141,11 @@ export default class extends React.Component {
   };
 
   _handlePanMove = (_, gestureState) => {
-    // TODO: handle snapping behaviour
-    this._updateAngle(gestureState);
+    if (this.props.steps) {
+      // TODO: handle snapping behaviour
+    } else {
+      this._updateAngle(gestureState);
+    }
   };
 
   _handlePanRelease = () => {
