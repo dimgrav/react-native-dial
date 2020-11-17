@@ -1,14 +1,15 @@
 {
-  "name": "react-native-dial",
-  "version": "1.0.2",
-  "description": "Knob-style dial component for React Native",
-  "main": "./Dial.js",
+  "name": "react-native-snap-dials",
+  "version": "1.0.0",
+  "description": "Enhanced knob-style dial components for React Native",
+  "main": "./index.js",
   "license": "MIT",
   "repository": {
     "type": "https",
-    "url": "https://github.com/dimgrav/react-native-dial"
+    "url": "https://github.com/dimgrav/react-native-snap-dials"
   },
   "keywords": [
+    "snap",
     "dial",
     "react",
     "native",

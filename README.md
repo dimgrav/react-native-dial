@@ -1,5 +1,5 @@
-# react-native-dial
+# react-native-snap-dials
 
-Knob-style dial component for React Native.
+Enhanced Knob-style dial components for React Native.
 
-Forked from [https://github.com/netbeast/react-native-dial](https://github.com/netbeast/react-native-dial).
+Based on [https://github.com/netbeast/react-native-dial](https://github.com/netbeast/react-native-dial).
