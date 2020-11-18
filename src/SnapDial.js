@@ -91,8 +91,8 @@ export default class extends React.Component {
     }
   }
 
-  _calculateAngle = gestureState => {
-    const { pageX, pageY, moveX, moveY } = gestureState;
+  _calculateAngleX = gestureData => {
+    const { pageX, pageY, moveX, moveY } = gestureData;
     const [x, y] = [pageX || moveX, pageY || moveY];
     const [dx, dy] = [x - this._offset.x, y - this._offset.y];
     return {
@@ -101,15 +101,24 @@ export default class extends React.Component {
     };
   };
 
-  _updateAngle = gestureState => {
-    const { degX, radius } = this._calculateAngle(gestureState);
+  _trackGesture = gestureState => {
+    const { degX, radius } = this._calculateAngleX(gestureState);
     const degY = degX < 0 ? degX + 360 : degX
+
     if (Math.abs(this.state.angleY - degY) > this.props.precision) {
       if (this.props.steps) {
-        const step = Math.floor(360 / degY);
-        const degX = 360 * step / this.props.steps;
-        const degY = degX - 90;
-        this._updateState({ degX, degY, radius, step });
+        let step = Math.floor(360 / degY);
+
+        if (step > this.props.steps) {
+          const k = Math.floor(step / this.props.steps);
+          step = step - k * this.props.steps;
+          if (step === 0) step = 1;
+        }
+
+        const newDegX = 360 * step / this.props.steps;
+        const newDegY = newDegX > 90 ? newDegX - 90 : 270 + newDegX;
+
+        this._updateState({ degX: newDegX, degY: newDegY, radius, step });
       } else {
         this._updateState({ degX, degY, radius });
       }
@@ -132,7 +141,7 @@ export default class extends React.Component {
 
   _handlePanCapture = ({ nativeEvent }) => {
     this._measureOffset();
-    const { degX, radius } = this._calculateAngle(nativeEvent);
+    const { degX, radius } = this._calculateAngleX(nativeEvent);
     this.setState({
       startingAngle: degX,
       startingRadius: radius
@@ -141,11 +150,7 @@ export default class extends React.Component {
   };
 
   _handlePanMove = (_, gestureState) => {
-    if (this.props.steps) {
-      // TODO: handle snapping behaviour
-    } else {
-      this._updateAngle(gestureState);
-    }
+    this._trackGesture(gestureState);
   };
 
   _handlePanRelease = () => {
