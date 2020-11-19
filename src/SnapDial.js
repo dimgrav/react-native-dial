@@ -8,6 +8,9 @@ import { max, min, throttle } from 'lodash';
 import { styles } from './SnapDial.style';
 
 
+const calculateStep = angle => Math.floor(360 / angle);
+
+
 export default class extends React.Component {
   static propTypes = {
     fixed: PropTypes.bool,
@@ -63,13 +66,13 @@ export default class extends React.Component {
       angleX: this.props.initialAngle,
       angleY: this.props.initialAngle,
       radius: this.props.initialRadius,
-      step: null
+      step: this.props.steps ? calculateStep(this.props.initialAngle) : null
     };
   }
 
   _updateState({ degX, degY, radius, step = null }) {
     radius = this.state.releaseRadius + radius - this.state.startingRadius;
-    radius = min(max(radius, this.props.radiusMin), this.props.radiusMax);
+    radius = min([max([radius, this.props.radiusMin]), this.props.radiusMax]);
 
     const angleY = degY + this.state.releaseAngle - this.state.startingAngle;
 
@@ -85,8 +88,8 @@ export default class extends React.Component {
       }
 
       this.setState(update, () => {
-        this.props.onAngleYChange && this.props.onAngleYChange(angleY, radius);
-        update.angleX && this.props.onAngleXChange && this.props.onAngleXChange(degX);
+        this.props.onAngleYChange && this.props.onAngleYChange(this.state.angleY);
+        update.angleX && this.props.onAngleXChange && this.props.onAngleXChange(this.state.angleX);
       });
     }
   }
@@ -107,12 +110,11 @@ export default class extends React.Component {
 
     if (Math.abs(this.state.angleY - degY) > this.props.precision) {
       if (this.props.steps) {
-        let step = Math.floor(360 / degY);
+        let step = calculateStep(degY);
 
         if (step > this.props.steps) {
           const k = Math.floor(step / this.props.steps);
-          step = step - k * this.props.steps;
-          if (step === 0) step = 1;
+          step = max([step - k * this.props.steps, 1]); // step >= 1
         }
 
         const newDegX = 360 * step / this.props.steps;
