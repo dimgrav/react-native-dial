@@ -1,14 +1,12 @@
-# react-native-snap-dials
+# react-native-snap-dial
 
 **WORK IN PROGRESS**
 
-Enhanced Knob-style dial components for React Native.
+Enhanced Knob-style dial component for React Native.
 
 Based on [https://github.com/netbeast/react-native-dial](https://github.com/netbeast/react-native-dial).
 
 ## API
-
-`SnapDial`:
 
 | prop              | description                                                                          |
 | :-------------    | :----------------------------------------------------------------------------------- |
@@ -19,12 +17,12 @@ Based on [https://github.com/netbeast/react-native-dial](https://github.com/netb
 | `onAngleXChange?` | callback to handle angle measured from the negative X-axis value area (4th quadrant) |
 | `onAngleYChange?` | callback to handle angle measured from the positive Y-axis value area (1st quadrant) |
 | `pointerEvents?`  | whether to pass touch events                                                         |
-| `precision`       | minimum allowed difference between angle changes for updating the current angles     |
-| `steps?`          | number of equal-length arcs on the circle circumference to snap the pointer to       |
+| `precision`       | minimum allowed difference between angle changes for gesture tracking                |
+| `sections?`       | number of equal-length arcs on the circle circumference to snap the pointer to       |
 | `radiusMax?`      | maximum allowed gesture radius for handling touch events                             |
 | `radiusMin?`      | minimum allowed gesture radius for handling touch events                             |
-| `responderStyle?` | `PanResponder` style                                                                 |
-| `containerStyle?` | `SnapDial` style                                                                     |
+| `responderStyle?` | style for the `View` that `PanResponder.panHandlers` are passed to                   |
+| `containerStyle?` | style for the `View` that wraps the dial component(s)                                |
 
 ## License
 
