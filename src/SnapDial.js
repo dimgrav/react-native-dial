@@ -8,9 +8,6 @@ import { max, min, throttle } from 'lodash';
 import { styles } from './SnapDial.style';
 
 
-const calculateStep = angle => Math.floor(360 / angle);
-
-
 export default class extends React.Component {
   static propTypes = {
     fixed: PropTypes.bool,
@@ -21,7 +18,7 @@ export default class extends React.Component {
     onAngleYChange: PropTypes.func,
     pointerEvents: PropTypes.oneOf(['box-none', 'none', 'box-only', 'auto']),
     precision: PropTypes.number,
-    steps: PropTypes.number,
+    sections: PropTypes.number,
     radiusMax: PropTypes.number,
     radiusMin: PropTypes.number,
     responderStyle: ViewPropTypes.style,
@@ -66,11 +63,11 @@ export default class extends React.Component {
       angleX: this.props.initialAngle,
       angleY: this.props.initialAngle,
       radius: this.props.initialRadius,
-      step: this.props.steps ? calculateStep(this.props.initialAngle) : null
+      section: this.props.sections ? this._calculateSection(this.props.initialAngle) : null
     };
   }
 
-  _updateState({ degX, degY, radius, step = null }) {
+  _updateState({ degX, degY, radius, section = null }) {
     radius = this.state.releaseRadius + radius - this.state.startingRadius;
     radius = min([max([radius, this.props.radiusMin]), this.props.radiusMax]);
 
@@ -83,8 +80,8 @@ export default class extends React.Component {
         update.angleX = degX;
       }
 
-      if (step) {
-        update.step = step;
+      if (section) {
+        update.section = section;
       }
 
       this.setState(update, () => {
@@ -100,8 +97,12 @@ export default class extends React.Component {
     const [dx, dy] = [x - this._offset.x, y - this._offset.y];
     return {
       degX: Math.atan2(dy, dx) * 180 / Math.PI + 120,
-      radius: Math.sqrt(dy * dy + dx * dx) / this.radius
+      radius: Math.sqrt(dy * dy + dx * dx) / this.radius // normalize r^2 = x^2 + y^2
     };
+  };
+
+  _calculateSection = angle => {
+    return Math.floor(angle * this.props.sections / 360);
   };
 
   _trackGesture = gestureState => {
@@ -109,18 +110,21 @@ export default class extends React.Component {
     const degY = degX < 0 ? degX + 360 : degX
 
     if (Math.abs(this.state.angleY - degY) > this.props.precision) {
-      if (this.props.steps) {
-        let step = calculateStep(degY);
+      if (this.props.sections) {
+        let section = this._calculateSection(degY);
 
-        if (step > this.props.steps) {
-          const k = Math.floor(step / this.props.steps);
-          step = max([step - k * this.props.steps, 1]); // step >= 1
+        if (section > this.props.sections) {
+          const k = Math.floor(section / this.props.sections);
+          section = section - k * this.props.sections;
         }
 
-        const newDegX = 360 * step / this.props.steps;
-        const newDegY = newDegX > 90 ? newDegX - 90 : 270 + newDegX;
+        if (section === 0) {
+          section = this.props.sections; // 1 <= section <= sections
+        }
 
-        this._updateState({ degX: newDegX, degY: newDegY, radius, step });
+        let deg = 360 * section / this.props.sections;
+  
+        this._updateState({ degX: deg, degY: deg, radius, section });
       } else {
         this._updateState({ degX, degY, radius });
       }

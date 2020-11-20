@@ -11,7 +11,7 @@ declare module 'react-native-snap-dials' {
       onAngleYChange?: Function;
       pointerEvents?: string | Array<string>;
       precision?: number;
-      steps?: number;
+      sections?: number;
       radiusMax?: number;
       radiusMin?: number;
       responderStyle?: ReactNative.ViewStyle | Array<ReactNative.ViewStyle>;
