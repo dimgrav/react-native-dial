@@ -96,7 +96,7 @@ export default class extends React.Component {
     const [x, y] = [pageX || moveX, pageY || moveY];
     const [dx, dy] = [x - this._offset.x, y - this._offset.y];
     return {
-      degX: Math.atan2(dy, dx) * 180 / Math.PI + 120,
+      degX: Math.atan2(dy, dx) * 180 / Math.PI + 180,
       radius: Math.sqrt(dy * dy + dx * dx) / this.radius // normalize r^2 = x^2 + y^2
     };
   };
@@ -123,7 +123,7 @@ export default class extends React.Component {
         }
 
         let deg = 360 * section / this.props.sections;
-  
+
         this._updateState({ degX: deg, degY: deg, radius, section });
       } else {
         this._updateState({ degX, degY, radius });
