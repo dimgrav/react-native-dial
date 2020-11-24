@@ -71,7 +71,18 @@ export default class extends React.Component {
     radius = this.state.releaseRadius + radius - this.state.startingRadius;
     radius = min([max([radius, this.props.radiusMin]), this.props.radiusMax]);
 
-    const angleY = degY + this.state.releaseAngle - this.state.startingAngle;
+    let angleY = degY + this.state.releaseAngle - this.state.startingAngle;
+    if (angleY < 0) angleY += 360;
+    if (angleY > 360) angleY %= 360;
+    
+    if (section) {
+      /*
+        TODO: round angleY to the angle of the nearest section
+        e.g. for 15deg per section (total of 24 sections)
+        - angleY = 44.123 -> 45 (section 3)
+        - angleY = 61.234 -> 60 (section 4)
+      */
+    }
 
     if (angleY !== this.state.angleY || radius !== this.state.radius) {
       let update = { angleY, radius };
@@ -91,12 +102,15 @@ export default class extends React.Component {
     }
   }
 
-  _calculateAngleX = gestureData => {
+  _calculateAngles = gestureData => {
     const { pageX, pageY, moveX, moveY } = gestureData;
     const [x, y] = [pageX || moveX, pageY || moveY];
-    const [dx, dy] = [x - this._offset.x, y - this._offset.y];
+    const [dx, dy] = [x - this._offset.x, y - this._offset.y]; 
+    // degX: measured from (1, 0) on the unit circle
+    // degY: measured from (0, 0) on the unit circle
     return {
-      degX: Math.atan2(dy, dx) * 180 / Math.PI + 180,
+      degX: Math.atan2(dy, dx) * 180 / Math.PI + 90,
+      degY: Math.atan2(dy, dx) * 180 / Math.PI + 180,
       radius: Math.sqrt(dy * dy + dx * dx) / this.radius // normalize r^2 = x^2 + y^2
     };
   };
@@ -106,16 +120,16 @@ export default class extends React.Component {
   };
 
   _trackGesture = gestureState => {
-    const { degX, radius } = this._calculateAngleX(gestureState);
-    const degY = degX < 0 ? degX + 360 : degX
+    let { degX, degY, radius } = this._calculateAngles(gestureState);
+
+    if (degX < 0) degX += 360;
 
     if (Math.abs(this.state.angleY - degY) > this.props.precision) {
       if (this.props.sections) {
         let section = this._calculateSection(degY);
 
         if (section > this.props.sections) {
-          const k = Math.floor(section / this.props.sections);
-          section = section - k * this.props.sections;
+          section = section % this.props.sections;
         }
 
         if (section === 0) {
@@ -123,8 +137,10 @@ export default class extends React.Component {
         }
 
         let deg = 360 * section / this.props.sections;
+        degX = deg <= 90 ? 270 + deg : deg - 90;
+        degY = deg;
 
-        this._updateState({ degX: deg, degY: deg, radius, section });
+        this._updateState({ degX, degY, radius, section });
       } else {
         this._updateState({ degX, degY, radius });
       }
@@ -147,9 +163,9 @@ export default class extends React.Component {
 
   _handlePanCapture = ({ nativeEvent }) => {
     this._measureOffset();
-    const { degX, radius } = this._calculateAngleX(nativeEvent);
+    const { degY, radius } = this._calculateAngles(nativeEvent);
     this.setState({
-      startingAngle: degX,
+      startingAngle: degY,
       startingRadius: radius
     });
     return true;

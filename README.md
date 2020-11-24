@@ -14,8 +14,8 @@ Based on [https://github.com/netbeast/react-native-dial](https://github.com/netb
 | `elastic?`        | whether to apply `scale` transformation                                              |
 | `initialAngle`    | starting pointer angle                                                               |
 | `initialRadius`   | starting gesture radius                                                              |
-| `onAngleXChange?` | callback to handle angle measured from the negative X-axis value area (4th quadrant) |
-| `onAngleYChange?` | callback to handle angle measured from the positive Y-axis value area (1st quadrant) |
+| `onAngleXChange?` | callback to handle angle measured clockwise from the X-axis (2nd quadrant)           |
+| `onAngleYChange?` | callback to handle angle measured clockwise from the Y-axis (1st quadrant)           |
 | `pointerEvents?`  | whether to pass touch events                                                         |
 | `precision`       | minimum allowed difference between angle changes for gesture tracking                |
 | `sections?`       | number of equal-length arcs on the circle circumference to snap the pointer to       |

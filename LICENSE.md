@@ -1,7 +1,9 @@
 MIT License
 
 Copyright (c) 2016 Netbeast
+
 Copyright (c) 2019 Dimitrios Gravanis, Dimitris-Sotiris Tsolis
+
 Copyright (c) 2020 Dimitrios Gravanis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
