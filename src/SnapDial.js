@@ -72,28 +72,17 @@ export default class extends React.Component {
     radius = min([max([radius, this.props.radiusMin]), this.props.radiusMax]);
 
     let angleY = degY + this.state.releaseAngle - this.state.startingAngle;
+
     if (angleY < 0) angleY += 360;
     if (angleY > 360) angleY %= 360;
-    
-    if (section) {
-      /*
-        TODO: round angleY to the angle of the nearest section
-        e.g. for 15deg per section (total of 24 sections)
-        - angleY = 44.123 -> 45 (section 3)
-        - angleY = 61.234 -> 60 (section 4)
-      */
-    }
+    if (section) angleY = this._roundAngleToNearestSection(angleY);
+    if (angleY === 360) angleY = 0;
 
     if (angleY !== this.state.angleY || radius !== this.state.radius) {
       let update = { angleY, radius };
 
-      if (this.state.angleX !== degX) {
-        update.angleX = degX;
-      }
-
-      if (section) {
-        update.section = section;
-      }
+      if (this.state.angleX !== degX) update.angleX = degX;
+      if (section) update.section = section;
 
       this.setState(update, () => {
         this.props.onAngleYChange && this.props.onAngleYChange(this.state.angleY);
@@ -102,10 +91,19 @@ export default class extends React.Component {
     }
   }
 
+  _roundAngleToNearestSection = angle => {
+    const anglePerSection = 360 / this.props.sections;
+    const excess = angle % anglePerSection;
+    if (excess > anglePerSection / 2) {
+      return angle + anglePerSection - excess;
+    }
+    return angle - excess;
+  };
+
   _calculateAngles = gestureData => {
     const { pageX, pageY, moveX, moveY } = gestureData;
     const [x, y] = [pageX || moveX, pageY || moveY];
-    const [dx, dy] = [x - this._offset.x, y - this._offset.y]; 
+    const [dx, dy] = [x - this._offset.x, y - this._offset.y];
     // degX: measured from (1, 0) on the unit circle
     // degY: measured from (0, 0) on the unit circle
     return {
@@ -121,22 +119,18 @@ export default class extends React.Component {
 
   _trackGesture = gestureState => {
     let { degX, degY, radius } = this._calculateAngles(gestureState);
+    const { sections } = this.props;
 
     if (degX < 0) degX += 360;
 
     if (Math.abs(this.state.angleY - degY) > this.props.precision) {
-      if (this.props.sections) {
+      if (sections) {
         let section = this._calculateSection(degY);
 
-        if (section > this.props.sections) {
-          section = section % this.props.sections;
-        }
+        if (section > sections) section = section % sections;
+        if (section === 0) section = sections; // 1 <= section <= sections
 
-        if (section === 0) {
-          section = this.props.sections; // 1 <= section <= sections
-        }
-
-        let deg = 360 * section / this.props.sections;
+        let deg = 360 * section / sections;
         degX = deg <= 90 ? 270 + deg : deg - 90;
         degY = deg;
 
