@@ -1,1 +1,2 @@
-export { default as SnapDial } from './SnapDial';
+import SnapDial from './SnapDial';
+export default SnapDial;

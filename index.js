@@ -1,1 +1,2 @@
-export { SnapDial } from './src';
+import SnapDial from './src';
+export default SnapDial;

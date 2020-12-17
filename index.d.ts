@@ -1,4 +1,4 @@
-declare module 'react-native-snap-dials' {
+declare module 'react-native-snap-dial' {
     import * as React from 'react';
     import * as ReactNative from 'react-native';
   
